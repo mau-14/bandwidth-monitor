@@ -1,28 +1,37 @@
-import time
 import psutil
+import time
 
-last_received = psutil.net_io_counters().bytes_recv
-last_sent = psutil.net_io_counters().bytes_sent
-last_total = last_received + last_sent
+# Identificar todas las interfaces de red y sus estadísticas
+print("Available network interfaces and their stats:")
+interfaces = psutil.net_if_addrs()
+for iface, stats in interfaces.items():
+    print(f"Interface: {iface}")
+    for s in stats:
+        print(f"  {s}")
 
+# Monitorear una interfaz específica (por ejemplo: 'eth0')
+INTERFACE_NAME = "eth0"  # Cambia esto por el nombre de tu interfaz activa
 
-while True:
- 
-    bytes_received = psutil.net_io_counters().bytes_recv
-    bytes_sent = psutil.net_io_counters().bytes_sent
-    bytes_total = last_received + last_sent
+try:
+    while True:
+        # Obtener estadísticas de la interfaz específica
+        counters = psutil.net_io_counters(pernic=True)
+        if INTERFACE_NAME not in counters:
+            print(f"Error: Interface '{INTERFACE_NAME}' not found. Available interfaces: {list(counters.keys())}")
+            break
 
-    new_received = bytes_received - last_received
-    new_sent = bytes_sent - last_sent
-    new_total = bytes_total - last_total
-    
-    mb_new_received = new_received / 1024 / 1024
-    mb_new_sent = new_sent / 1024 / 1024
-    mb_new_total = new_total / 1024 / 1024
-    
-    print(f"{mb_new_received:.2f} MB recieved, {mb_new_sent:.2f} MB sent, {mb_new_total:.2f} MB total")
-    last_received = bytes_received
-    last_sent = bytes_sent
-    last_total = bytes_total
+        stats = counters[INTERFACE_NAME]
+        bytes_received = stats.bytes_recv
+        bytes_sent = stats.bytes_sent
 
-    time.sleep(1)
+        # Convertir bytes a KB para mayor claridad
+        kb_received = bytes_received / 1024 / 1024
+        kb_sent = bytes_sent / 1024 / 1024
+
+        # Imprimir tráfico actual de la interfaz
+        print(f"Interface '{INTERFACE_NAME}': {kb_received:.2f} MB received, {kb_sent:.2f} MB sent")
+
+        time.sleep(1)
+
+except KeyboardInterrupt:
+    print("\nMonitoring stopped.")
