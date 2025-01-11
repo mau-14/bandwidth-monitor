@@ -21,3 +21,8 @@ while True:
     mb_new_total = new_total / 1024 / 1024
     
     print(f"{mb_new_received:.2f} MB recieved, {mb_new_sent:.2f} MB sent, {mb_new_total:.2f} MB total")
+    last_received = bytes_received
+    last_sent = bytes_sent
+    last_total = bytes_total
+
+    time.sleep(1)
